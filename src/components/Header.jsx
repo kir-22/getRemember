@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import Navbar from 'react-bootstrap/Navbar';
 import Form from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import Image from 'react-bootstrap/Image';
+import qs from 'querystring';
 import Nav from 'react-bootstrap/Nav'
 import Forms from '../static/Forms.jsx';
 import FormsEn from '../static/FormsEn.jsx';
@@ -16,7 +18,8 @@ class Header extends Component {
   constructor(props){
     super(props);
     this.state={
-      text: '',
+      // text: '',
+      code: '',
       lang: this.props.lang
     }
   }
@@ -25,11 +28,12 @@ class Header extends Component {
       : localStorage.setItem('lang', 'rus');
   }
 
-  onChange = e => {
+  onChange = (id, value) => {
     this.setState({
-      text: e.target.value
+      [id]: value,
     });
-  }
+  };
+  
   render() {
     let rus = (this.props.lang === 'rus');
     return (
@@ -45,13 +49,28 @@ class Header extends Component {
               </Button>
               <div className="md-form form-sm m-2">
                 <FormControl 
+                  id="code"
                   type="text" 
                   placeholder={(rus ? Forms : FormsEn).codeName} 
-                  value={this.state.text} 
-                  onChange={this.onChange}
+                  value={this.state.code} 
+                  onChange={({target:{id, value}})=>{
+                    this.onChange(id, value)}
+                  }
                 />
               </div>
-              <Button variant="primary">{(rus ? Forms : FormsEn).search}</Button>
+              <Button 
+                variant="primary" 
+                onClick={()=>{
+                  this.props.onSearch(
+                    {
+                      code: this.state.code,
+                      password: '',
+                    }
+                  )
+                }}
+              >
+                {(rus ? Forms : FormsEn).search}
+              </Button>
             </Form>
             <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
               <Link to='/' className="ml-4 link">

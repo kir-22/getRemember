@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -14,7 +14,7 @@ class Content extends Component {
   constructor(props){
     super(props);
     this.state = {
-      code: '',
+      text: '',
       language: 'javascript',
       password: '',
       languageData: LanguageList.language,
@@ -30,76 +30,55 @@ class Content extends Component {
     }
   };
 
-  editorDidMount(editor, monaco){
-    editor.focus();
-    
-  }
-  onChange = (value)=>{
-    // console.log('value: ', value);
-    this.setState({
-      code: value
-    });
-  };
-  selectChange = (id, value) => {
-    // console.log('id - value: ', id, value);
-    this.setState({
-      [id]: value,
-    });
-  }
-  saveAll = ()=>{
-    axios.post(
-      // // `${MAIN_URL}api/notes`,
-      'http://getremember.com/api/notes',
-      qs.stringify(
-        {
-          text: this.state.code,
-          password:  this.state.password || '',
-          lang:  this.state.language,
-        },
-      ),
-    ).then((res) => {console.log(res.data, '2222');
-        this.responseParser(res);
-    }).catch((error) => {
-      console.log(error.response.data);
-      this.responseParser(error.response.data);
-    })
-  };
-  responseParser = res => {
-    if(res.status === 'error'){
-      this.setState({
-        error: res.message,  
-      });
-    }
-    if(res.status === 200){
-      this.setState({
-        message: res.data.message,
-      });
-    }
-  }
+  // componentDidUpdate(nextProps, nextState) {
+  //   console.log('----->',nextProps, this.props);
+  // }
+  // shouldComponentUpdate(a,b){
+  //   console.log(a,b);
+  // }
 
-  render() {console.log('props', this.props);
+  // editorDidMount(editor, monaco){console.log('111');
+  //   editor.focus();
+    
+  // }
+  onChange = (id, value)=>{
+    console.log('value: ',id, value);
+    this.setState({
+      [id]: value
+    });
+  };
+
+  render() {console.log('props', this.props.findData);
     let rus = this.props.lang === 'rus';
     return (
       <React.Fragment>
         <Form className='formChoose-container'>
             {
-              this.state.message ?
+              !!this.props.message ?
               <Alert variant='success'>
-                <div dangerouslySetInnerHTML={{__html: this.state.message}} />
+                <div dangerouslySetInnerHTML={{__html: this.props.message}} />
               </Alert>
                : false
             }
             {
-              !!this.state.error ?
+              !!this.props.error ?
               <Alert variant='danger'>
-                {this.state.error}
+                {this.props.error}
               </Alert>
                : false
             }
           <div className="main-choose">
             <Button
               variant='primary'
-              onClick={()=>{this.saveAll()}}
+              onClick={()=>{
+                this.props.onSaveAll(
+                  {
+                    text: this.state.text,
+                    password: this.state.password,
+                    lang: this.state.language,
+                  }
+                )
+              }}
             >
               {(rus ? Forms : FormsEn).save}
             </Button>
@@ -110,7 +89,7 @@ class Content extends Component {
               size='lg'
               style={{ width: '400px', textAlign: 'center' }}
               value={this.state.language}
-              onChange={(e)=>{this.selectChange(e.target.id, e.target.value)}}
+              onChange={(e)=>{this.onChange(e.target.id, e.target.value)}}
             >
               {
                 this.state.languageData.map((el, i) => (
@@ -125,11 +104,11 @@ class Content extends Component {
             <MonacoEditor
               width="100%"
               height="348px"
-              language={this.state.language}
+              language={this.props.language}
               theme="vs-light"
-              value={this.state.code}
+              value={this.state.text}
               options={this.options}
-              onChange={(value)=>{this.onChange(value)}}
+              onChange={(value)=>{this.onChange('text', value)}}
               editorDidMount={this.editorDidMount}
             />
           </Form.Group>
@@ -141,7 +120,8 @@ class Content extends Component {
                 as='input'
                 type={'password'}
                 placeholder={(rus ? Forms : FormsEn).password}
-                onChange={(e)=>{this.selectChange(e.target.id, e.target.value)}}
+                onChange={(e)=>{this.onChange(e.target.id, e.target.value)}}
+                value={this.state.password}
               />
             </div>
             <Form.Text>
@@ -149,7 +129,17 @@ class Content extends Component {
               </Form.Text>
           </Form.Group>
           <Form.Group className="main-choose_col">
-            <Button variant='primary' onClick={()=>{this.saveAll()}}>
+            <Button 
+              variant='primary'  
+              onClick={()=>{
+                this.props.onSaveAll(
+                  {
+                    text: this.state.text,
+                    password: this.state.password,
+                    lang: this.state.language,
+                  }
+              )}}
+            >
               {(rus ? Forms : FormsEn).save}
             </Button>
           </Form.Group>
