@@ -30,17 +30,36 @@ class Content extends Component {
     }
   };
 
-  // componentDidUpdate(nextProps, nextState) {
-  //   console.log('----->',nextProps, this.props);
-  // }
-  // shouldComponentUpdate(a,b){
-  //   console.log(a,b);
-  // }
-
-  // editorDidMount(editor, monaco){console.log('111');
+  componentDidUpdate(nextProps, nextState) {
+    console.log('----->',nextProps, this.props);
+    // !!this.props.findData ? 
+    // this.setState({
+    //   text: JSON.parse(this.props.findData.text).text,
+    //   language: JSON.parse(this.props.findData.text).lang,
+    // }) : false;
+  }
+  shouldComponentUpdate(nextProps, nextState){
+    console.log('should----->',nextProps, this.props);
+    return true;
+  }
+  componentDidMount() {
+    console.warn('Helllo');
+    !!this.props.findData ? 
+    this.setState({
+      text: JSON.parse(this.props.findData.text).text,
+      language: JSON.parse(this.props.findData.text).lang,
+      message: `Фраза для получения: <b>${this.props.findData.code}</b><br/> Ссылка: <a href='https://getremember.com/view/${this.props.findData['t_code']}'>https://getremember.com/view/${this.props.findData['t_code']}</a>`
+    }) : false;
+  }
+  
+  // editorDidMount(editor, monaco){
+  //   console.log('Mounted editor', editor);//Можно здесь обновить стейт для значений если пришли найденные данные
   //   editor.focus();
-    
+  //   // this.checkFindData();
   // }
+  checkFindData = ()=>{
+    console.log('CHECK');
+  };
   onChange = (id, value)=>{
     console.log('value: ',id, value);
     this.setState({
@@ -48,7 +67,8 @@ class Content extends Component {
     });
   };
 
-  render() {console.log('props', this.props.findData);
+  render() {
+    console.log('props', this.props.findData);
     let rus = this.props.lang === 'rus';
     return (
       <React.Fragment>
@@ -64,6 +84,13 @@ class Content extends Component {
               !!this.props.error ?
               <Alert variant='danger'>
                 {this.props.error}
+              </Alert>
+               : false
+            }
+            {
+              !!this.state.message ?
+              <Alert variant='success'>
+                <div dangerouslySetInnerHTML={{__html: this.state.message}} />
               </Alert>
                : false
             }
@@ -88,7 +115,7 @@ class Content extends Component {
               className="select_choose"
               size='lg'
               style={{ width: '400px', textAlign: 'center' }}
-              value={this.state.language}
+              value={ this.state.language}
               onChange={(e)=>{this.onChange(e.target.id, e.target.value)}}
             >
               {

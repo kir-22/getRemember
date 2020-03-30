@@ -34,10 +34,15 @@ class App extends Component {
         })
     }
     responseParser = (res, name) => {
-        if(res.status === 'error'){
+        if(res.status === 'error'){console.error(res);
           this.setState({
             error: res.message,  
           });
+        }
+        if(res.status === 'not_found'){console.error(res);
+            this.setState({
+                error: res.message,  
+            });
         }
         if(res.status === 200){
             switch(name){
