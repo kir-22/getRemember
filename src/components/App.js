@@ -3,6 +3,7 @@ import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import { createBrowserHistory } from "history";
 import qs from 'querystring';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import Header from './Header.jsx';
 import Content from './Content.jsx';
 import Footer from './Footer.jsx';
@@ -17,6 +18,7 @@ class App extends Component {
         message: '',
         error: '',
         findData: null,
+        code: null,
     };
     changeLang = ()=>{
         this.state.lang === 'rus' 
@@ -41,13 +43,16 @@ class App extends Component {
         }
         if(res.status === 'not_found'){console.error(res);
             this.setState({
-                error: res.message,  
+                error: res.message, 
+                findData: null, 
             });
         }
         if(res.status === 200){
             switch(name){
                 case 'saveNote': {
                     this.setState({
+                        findData: null,
+                        error: null,
                         message: res.data.message,
                     });
                     break;
@@ -56,6 +61,14 @@ class App extends Component {
                     console.log('searchNote', res.data);
                     this.setState({
                         findData: res.data.data,
+                        error: null,
+                        message: `Фраза для получения: <b>${res.data.data.code}</b><br/> Ссылка: <a target="_blank" href='https://getremember.com/view/${res.data.data.t_code}'>https://getremember.com/view/${res.data.data.t_code}</a>`,
+                        // message: <div>
+                        //             Фраза для получения: <b>{res.data.data.code}</b><br/> Ссылка: 
+                        //             <Link to={`/views/${res.data.data.t_code}`}>
+                        //                 {`https://getremember.com/view/${ res.data.data['t_code']}`}
+                        //             </Link>
+                        //         </div>
                     });
                     break;
                 }
@@ -73,33 +86,36 @@ class App extends Component {
     };
     onSearch = data => {
         console.log('search: ', data);
+        this.setState({
+            code: data.code,
+        },()=>{
+            this.makeRequest(
+                `${MAIN_URL}api/notes/find`,
+                'post',
+                data,
+                'searchNote'
+                );
+        });
+    }
+    onSearchAgain = (data) => {
         this.makeRequest(
             `${MAIN_URL}api/notes/find`,
             'post',
-            data,
+            {code: this.state.code, ...data},
             'searchNote'
         );
-        // axios.post(
-        //   // // `${MAIN_URL}api/notes`,
-        //   'http://getremember.com/api/notes/find',
-        //   qs.stringify(
-        //     {
-        //       code: data,
-        //       password:  this.state.password || '',
-        //       // lang:  this.state.language,
-        //     },
-        //   )
-        // ).then((res) => {console.log(res.data, 'Find');
-        //     // this.responseParser(res);
-        // }).catch((error) => {
-        //   console.log(error.response.data);
-        //   // this.responseParser(error.response.data);
-        // })
     }
     onChange = (id, value) => {
         console.log(id, value, '<---------');
         this.setState({
           [id]: value
+        });
+    };
+    newTick = () => {
+        this.setState({
+            findData: false,
+            message: null,
+            error: null,
         });
     }
     render() {
@@ -112,6 +128,7 @@ class App extends Component {
                     code={this.state.code}
                     onChange={(id, value)=>{this.onChange(id, value)}}
                     onSearch={data => {this.onSearch(data)}}
+                    newTick={() => {this.newTick()}}
                 />
                 <main className='container justify-content-center body-content'>
                     <Switch>
@@ -126,12 +143,28 @@ class App extends Component {
                                     message={this.state.message}
                                     error={this.state.error}
                                     findData={this.state.findData}
+                                    onSearch={data => {this.onSearchAgain(data)}}
+
                                 /> 
                             }
                         />
                         <Route 
                             path={'/about'} 
                             component={()=> <Aboute lang={this.state.lang} history={hist}/>}
+                        />
+                        <Route 
+                            path={'/views/'+`${this.state.findData ? this.state.findData.t_code : ''}`}
+                            exact 
+                            component={() => 
+                                <Content 
+                                    lang={this.state.lang} 
+                                    history={hist}
+                                    onSaveAll={data => {this.onSaveAll(data)}}
+                                    message={this.state.message}
+                                    error={this.state.error}
+                                    findData={this.state.findData}
+                                /> 
+                            }
                         />
                     </Switch>
                 </main>

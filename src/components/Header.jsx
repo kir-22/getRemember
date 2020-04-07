@@ -44,7 +44,9 @@ class Header extends Component {
             <Form inline>
               <Button 
                 variant="success" 
-                className='d-none d-lg-block mr-sm-20'>
+                className='d-none d-lg-block mr-sm-20'
+                onClick={() => {this.props.newTick()}}
+              >
                   {(rus ? Forms : FormsEn).newTick}
               </Button>
               <div className="md-form form-sm m-2">

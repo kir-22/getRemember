@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import qs from 'querystring';
 import Alert from 'react-bootstrap/Alert'
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import LanguageList from '../static/language.json';
 import Forms from '../static/Forms.jsx';
 import FormsEn from '../static/FormsEn.jsx';
@@ -48,7 +49,16 @@ class Content extends Component {
     this.setState({
       text: JSON.parse(this.props.findData.text).text,
       language: JSON.parse(this.props.findData.text).lang,
-      message: `Фраза для получения: <b>${this.props.findData.code}</b><br/> Ссылка: <a href='https://getremember.com/view/${this.props.findData['t_code']}'>https://getremember.com/view/${this.props.findData['t_code']}</a>`
+      message: `Фраза для получения: <b>${this.props.findData.code}</b><br/> Ссылка: <a target="_blank" href='https://getremember.com/view/${this.props.findData.t_code}'>https://getremember.com/view/${this.props.findData.t_code}</a>`,
+      // <div>
+      //   Фраза для получения: <b>${this.props.findData.code}</b><br/> Ссылка: 
+      //     {/* <a href={`https://getremember.com/view/${this.props.findData.t_code}`} target='_blank'>
+      //       https://getremember.com/view/${this.props.findData['t_code']}
+      //     </a> */}
+      //     <Link to={`/views/${this.props.findData.t_code}`}>
+      //       https://getremember.com/view/${this.props.findData['t_code']}
+      //     </Link>
+      //   </div>
     }) : false;
   }
   
@@ -70,10 +80,43 @@ class Content extends Component {
   render() {
     console.log('props', this.props.findData);
     let rus = this.props.lang === 'rus';
+    let alert = !!this.props.error 
+      ? <Alert variant='danger'>
+          {this.props.error}
+            <div className="md-form form-sm m-2">
+              <Form.Control
+                id='password'
+                as='input'
+                type={'password'}
+                placeholder={(rus ? Forms : FormsEn).password}
+                onChange={(e)=>{this.onChange(e.target.id, e.target.value)}}
+                value={this.state.password}
+              />
+            </div>
+            <Button 
+              variant="primary" 
+              onClick={()=>{
+                this.props.onSearch(
+                  {
+                    password: this.state.password,
+                  }
+                )
+              }}
+            >
+              {(rus ? Forms : FormsEn).search}
+            </Button>
+        </Alert> 
+      : !!this.props.message 
+        ? <Alert variant='success'>
+            <div dangerouslySetInnerHTML={{__html: this.props.message}} />
+            {/* {this.props.message} */}
+          </Alert>
+        : false;
     return (
       <React.Fragment>
         <Form className='formChoose-container'>
-            {
+          { alert }
+            {/* {
               !!this.props.message ?
               <Alert variant='success'>
                 <div dangerouslySetInnerHTML={{__html: this.props.message}} />
@@ -93,7 +136,7 @@ class Content extends Component {
                 <div dangerouslySetInnerHTML={{__html: this.state.message}} />
               </Alert>
                : false
-            }
+            } */}
           <div className="main-choose">
             <Button
               variant='primary'
