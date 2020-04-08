@@ -19,6 +19,8 @@ class App extends Component {
         error: '',
         findData: null,
         code: null,
+        historyCode: null,
+        historyData: {},
     };
     changeLang = ()=>{
         this.state.lang === 'rus' 
@@ -57,18 +59,28 @@ class App extends Component {
                     });
                     break;
                 }
-                case 'searchNote':{
+                case 'searchNote': {
                     console.log('searchNote', res.data);
                     this.setState({
                         findData: res.data.data,
                         error: null,
                         message: `Фраза для получения: <b>${res.data.data.code}</b><br/> Ссылка: <a target="_blank" href='https://getremember.com/view/${res.data.data.t_code}'>https://getremember.com/view/${res.data.data.t_code}</a>`,
+                        historyCode: res.data.data.parent_code,
                         // message: <div>
                         //             Фраза для получения: <b>{res.data.data.code}</b><br/> Ссылка: 
                         //             <Link to={`/views/${res.data.data.t_code}`}>
                         //                 {`https://getremember.com/view/${ res.data.data['t_code']}`}
                         //             </Link>
                         //         </div>
+                    });
+                    break;
+                }
+                case 'historyCode': {
+                    console.log('historyCode', res.data.data);
+                    this.state.historyData['text'] = JSON.parse(res.data.data.text).text;
+                    this.state.historyData['language'] = JSON.parse(res.data.data.text).lang;
+                    this.setState({
+                        historyData: this.state.historyData,
                     });
                     break;
                 }
@@ -101,7 +113,10 @@ class App extends Component {
         this.makeRequest(
             `${MAIN_URL}api/notes/find`,
             'post',
-            {code: this.state.code, ...data},
+            {
+                code: this.state.code, 
+                ...data
+            },
             'searchNote'
         );
     }
@@ -116,8 +131,24 @@ class App extends Component {
             findData: false,
             message: null,
             error: null,
+            parentId: null,
         });
+    };
+
+    showhistoryCode = data => {
+        this.makeRequest(
+            `${MAIN_URL}api/notes/find`,
+            'post',
+            data,
+            'historyCode'
+        );
     }
+    hideHistoryCode = () => {
+        this.setState({
+            historyData: {},
+        });
+    };
+
     render() {
         return (
             <BrowserRouter>
@@ -144,7 +175,11 @@ class App extends Component {
                                     error={this.state.error}
                                     findData={this.state.findData}
                                     onSearch={data => {this.onSearchAgain(data)}}
-
+                                    parentId={this.state.code}
+                                    historyCode={this.state.historyCode}
+                                    showhistoryCode={data => this.showhistoryCode(data)}
+                                    historyData={this.state.historyData}
+                                    hideHistoryCode = {this.hideHistoryCode}
                                 /> 
                             }
                         />

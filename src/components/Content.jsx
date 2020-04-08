@@ -1,5 +1,5 @@
-import React, { Component, PureComponent } from 'react';
-import MonacoEditor from 'react-monaco-editor';
+import React, { Component } from 'react';
+import MonacoEditor, {MonacoDiffEditor} from 'react-monaco-editor'; 
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import qs from 'querystring';
@@ -28,6 +28,7 @@ class Content extends Component {
         automaticLayout: false,
         theme: 'vs-light',
         colorDecorators: true,
+
     }
   };
 
@@ -79,6 +80,13 @@ class Content extends Component {
 
   render() {
     console.log('props', this.props.findData);
+    console.log('parentId', this.props.parentId);
+    console.log("this.props.historyCode ", this.props.historyCode );
+    const code1 = "// your original code...";
+    const code2 = "// a different version...";
+    const options = {
+      //renderSideBySide: false
+    };
     let rus = this.props.lang === 'rus';
     let alert = !!this.props.error 
       ? <Alert variant='danger'>
@@ -116,27 +124,6 @@ class Content extends Component {
       <React.Fragment>
         <Form className='formChoose-container'>
           { alert }
-            {/* {
-              !!this.props.message ?
-              <Alert variant='success'>
-                <div dangerouslySetInnerHTML={{__html: this.props.message}} />
-              </Alert>
-               : false
-            }
-            {
-              !!this.props.error ?
-              <Alert variant='danger'>
-                {this.props.error}
-              </Alert>
-               : false
-            }
-            {
-              !!this.state.message ?
-              <Alert variant='success'>
-                <div dangerouslySetInnerHTML={{__html: this.state.message}} />
-              </Alert>
-               : false
-            } */}
           <div className="main-choose">
             <Button
               variant='primary'
@@ -146,6 +133,7 @@ class Content extends Component {
                     text: this.state.text,
                     password: this.state.password,
                     lang: this.state.language,
+                    parent_code: this.props.parentId,
                   }
                 )
               }}
@@ -171,18 +159,68 @@ class Content extends Component {
             </Form.Control>
           </div>
           <Form.Group className="main-choose_col editor">
-            <MonacoEditor
-              width="100%"
-              height="348px"
-              language={this.props.language}
-              theme="vs-light"
-              value={this.state.text}
-              options={this.options}
-              onChange={(value)=>{this.onChange('text', value)}}
-              editorDidMount={this.editorDidMount}
-            />
+                {/* <MonacoEditor
+                  width="100%"
+                  height="348px"
+                  language={this.props.language}
+                  theme="vs-light"
+                  value= {this.state.text}
+                  options={this.options}
+                  onChange={(value)=>{this.onChange('text', value)}}
+                  editorDidMount={this.editorDidMount}
+                />  */}
+
+            { 
+              !this.props.historyData.text
+              ? <MonacoEditor
+                  width="100%"
+                  height="348px"
+                  language={this.props.language}
+                  theme="vs-light"
+                  value= {this.state.text}
+                  options={this.options}
+                  onChange={(value)=>{this.onChange('text', value)}}
+                  editorDidMount={this.editorDidMount}
+                /> 
+              : <MonacoDiffEditor
+                  width="100%"
+                  height="348px"
+                  language={this.props.language}
+                  originalLanguage={this.props.historyData.language}
+                  original={this.props.historyData.text}
+                  value={this.state.text}
+                  options={options}
+                />
+            }
           </Form.Group>
-            <Form.Text>{(rus ? Forms : FormsEn).yourText}</Form.Text>
+          <Form.Text>{(rus ? Forms : FormsEn).yourText}</Form.Text>
+          {
+            !!this.props.historyCode 
+            ? !this.props.historyData.text  
+                ? <Form.Group className="main-choose_col">
+                    <Button 
+                      variant='primary'  
+                      onClick={()=>{
+                        this.props.showhistoryCode(
+                          {
+                            code: this.props.historyCode,
+                            password: '',
+                          }
+                      )}}
+                    >
+                      {(rus ? Forms : FormsEn).showHistory}
+                    </Button>
+                  </Form.Group>
+                : <Form.Group className="main-choose_col">
+                    <Button 
+                    variant='primary'  
+                    onClick={() => this.props.hideHistoryCode()}
+                  >
+                    {(rus ? Forms : FormsEn).hideHistory}
+                  </Button>
+                </Form.Group>
+            : null
+          }
           <Form.Group className="main-choose_col">
             <div className="md-form form-lg mt-2 mb-2 w-100">
               <Form.Control
@@ -210,7 +248,7 @@ class Content extends Component {
                   }
               )}}
             >
-              {(rus ? Forms : FormsEn).save}
+              {(rus ? Forms : FormsEn).saveAsNew}
             </Button>
           </Form.Group>
         </Form>
