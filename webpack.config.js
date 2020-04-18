@@ -4,10 +4,14 @@ const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const webpack = require('webpack');
 const MAIN_URL = JSON.stringify('https://getremember.com/');
 module.exports = {
-  entry: "./src/index.js",
+  entry: ["@babel/polyfill", "./src/index.js"],
+  resolve: {
+    modules: ['src', 'node_modules'],
+    extensions: ['*', '.js', '.jsx']
+  },
   output: {
     path: path.join(__dirname, "/dist"),
-    filename: "index-bundle.js",
+    filename: "static/[hash].js",
     publicPath: '/',
   },
   module: {
@@ -23,7 +27,15 @@ module.exports = {
       },
       {
         test: /\.(ttf|jpeg|jpg|svg|png)$/,
-        use: ['file-loader']
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[hash].ext',
+              outputPath: 'static/'
+            }
+          }
+        ]
       }
     ]
   },
@@ -34,10 +46,9 @@ module.exports = {
     watchContentBase: true,
   },
   plugins: [
+    new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({'MAIN_URL': MAIN_URL}),
-    new HtmlWebpackPlugin({
-      template: "src/index.html"
-    }),
+    new HtmlWebpackPlugin({template: path.join(__dirname, 'src/index.html')}),
     new MonacoWebpackPlugin({
       languages: ['abap', 'apex', 'azcli', 'bat', 'cameligo', 'clojure', 'coffee', 'cpp', 'csharp', 'csp', 'css', 'dockerfile', 'fsharp', 'go', 'graphql', 'handlebars', 'html', 'ini', 'java', 'javascript', 'json', 'kotlin', 'less', 'lua', 'markdown', 'mips', 'msdax', 'mysql', 'objective-c', 'pascal', 'pascaligo', 'perl', 'pgsql', 'php', 'postiats', 'powerquery', 'powershell', 'pug', 'python', 'r', 'razor', 'redis', 'redshift', 'restructuredtext', 'ruby', 'rust', 'sb', 'scheme', 'scss', 'shell', 'solidity', 'sophia', 'sql', 'st', 'swift', 'tcl', 'twig', 'typescript', 'vb', 'xml', 'yaml'],
     })
