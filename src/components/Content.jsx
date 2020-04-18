@@ -32,20 +32,20 @@ class Content extends Component {
     }
   };
 
-  componentDidUpdate(nextProps, nextState) {
-    console.log('----->',nextProps, this.props);
+  // componentDidUpdate(nextProps, nextState) {
+  //   console.log('----->',nextProps, this.props);
     // !!this.props.findData ? 
     // this.setState({
     //   text: JSON.parse(this.props.findData.text).text,
     //   language: JSON.parse(this.props.findData.text).lang,
     // }) : false;
-  }
-  shouldComponentUpdate(nextProps, nextState){
-    console.log('should----->',nextProps, this.props);
-    return true;
-  }
+  // }
+  // shouldComponentUpdate(nextProps, nextState){
+  //   console.log('should----->',nextProps, this.props);
+  //   return true;
+  // }
   componentDidMount() {
-    console.warn('Helllo');
+    console.warn('Helllo', this.props.findData);
     !!this.props.findData ? 
     this.setState({
       text: JSON.parse(this.props.findData.text).text,
@@ -79,18 +79,18 @@ class Content extends Component {
   };
 
   render() {
-    console.log('props', this.props.findData);
-    console.log('parentId', this.props.parentId);
-    console.log("this.props.historyCode ", this.props.historyCode );
-    const code1 = "// your original code...";
-    const code2 = "// a different version...";
+    // console.log('props', this.props.findData);
+    // console.log('parentId', this.props.parentId);
+    // console.log("this.props.historyCode ", this.props.historyCode );
+    console.log('error', this.props.error);
+    console.log('this.props.message ', this.props.message);
     const options = {
       //renderSideBySide: false
     };
     let rus = this.props.lang === 'rus';
-    let alert = !!this.props.error 
+    let alert = !!this.props.error || !!this.props.errorParent
       ? <Alert variant='danger'>
-          {this.props.error}
+          {this.props.error || this.props.errorParent}
             <div className="md-form form-sm m-2">
               <Form.Control
                 id='password'
@@ -104,7 +104,12 @@ class Content extends Component {
             <Button 
               variant="primary" 
               onClick={()=>{
-                this.props.onSearch(
+                !!this.props.errorParent 
+                ? this.props.showhistoryCode({
+                  code: this.props.historyCode,
+                  password: this.state.password,
+                })
+                : this.props.onSearch(
                   {
                     password: this.state.password,
                   }
@@ -189,7 +194,7 @@ class Content extends Component {
                   originalLanguage={this.props.historyData.language}
                   original={this.props.historyData.text}
                   value={this.state.text}
-                  options={options}
+                  options={{...options, readOnly: true}}
                 />
             }
           </Form.Group>
