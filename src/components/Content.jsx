@@ -18,6 +18,7 @@ class Content extends Component {
       text: '',
       language: 'javascript',
       password: '',
+      passwordAlert: '',
       languageData: LanguageList.language,
     }
     this.options = {
@@ -93,12 +94,12 @@ class Content extends Component {
           {this.props.error || this.props.errorParent}
             <div className="md-form form-sm m-2">
               <Form.Control
-                id='password'
+                id='passwordAlert'
                 as='input'
                 type={'password'}
                 placeholder={(rus ? Forms : FormsEn).password}
                 onChange={(e)=>{this.onChange(e.target.id, e.target.value)}}
-                value={this.state.password}
+                value={this.state.passwordAlert}
               />
             </div>
             <Button 
@@ -107,11 +108,11 @@ class Content extends Component {
                 !!this.props.errorParent 
                 ? this.props.showhistoryCode({
                   code: this.props.historyCode,
-                  password: this.state.password,
+                  password: this.state.passwordAlert,
                 })
                 : this.props.onSearch(
                   {
-                    password: this.state.password,
+                    password: this.state.passwordAlert,
                   }
                 )
               }}

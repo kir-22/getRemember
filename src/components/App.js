@@ -108,6 +108,7 @@ class App extends Component {
         this.setState({
             code: data.code,
             historyData: {},
+            isSendHistory: '',
         },()=>{
             this.makeRequest(
                 `${MAIN_URL}api/notes/find`,
@@ -150,7 +151,7 @@ class App extends Component {
     };
 
     showhistoryCode = data => {
-        console.log('data: ', this.state.findData);
+        console.log('showhistoryCode: ', this.state.code);
 
         this.setState({
             isSendHistory: data.code,
