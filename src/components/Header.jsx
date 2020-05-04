@@ -33,6 +33,13 @@ class Header extends Component {
       [id]: value,
     });
   };
+  newTick = () => {
+    this.setState({
+      code: '',
+    }, () => {
+      this.props.newTick()
+    });
+  };
   
   render() {
     let rus = (this.props.lang === 'rus');
@@ -45,7 +52,7 @@ class Header extends Component {
               <Button 
                 variant="success" 
                 className='d-none d-lg-block mr-sm-20'
-                onClick={() => {this.props.newTick()}}
+                onClick={this.newTick}
               >
                   {(rus ? Forms : FormsEn).newTick}
               </Button>
@@ -62,6 +69,7 @@ class Header extends Component {
               </div>
               <Button 
                 variant="primary" 
+                disabled={!this.state.code}
                 onClick={()=>{
                   this.props.onSearch(
                     {

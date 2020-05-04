@@ -17,10 +17,13 @@ class App extends Component {
         lang: localStorage.getItem('lang'),
         message: '',
         error: '',
+        errorParent: '',
         findData: null,
         code: null,
         historyCode: null,
         historyData: {},
+        isSendHistory: null,
+        errorParent: '',
     };
     changeLang = ()=>{
         this.state.lang === 'rus' 
@@ -38,15 +41,16 @@ class App extends Component {
         })
     }
     responseParser = (res, name) => {
-        if(res.status === 'error'){console.error(res);
+        if(res.status === 'error'){console.error('1',res);
           this.setState({
             error: res.message,  
           });
         }
-        if(res.status === 'not_found'){console.error(res);
+        if(res.status === 'not_found'){console.error('2', res);
             this.setState({
-                error: res.message, 
-                findData: null, 
+                error: !this.state.isSendHistory ? res.message : null,
+                errorParent: !!this.state.isSendHistory ? res.message : null, 
+                findData: !!this.state.isSendHistory ? this.state.findData : null, 
             });
         }
         if(res.status === 200){
@@ -81,6 +85,9 @@ class App extends Component {
                     this.state.historyData['language'] = JSON.parse(res.data.data.text).lang;
                     this.setState({
                         historyData: this.state.historyData,
+                        historyCode: ' ',
+                        error: null,
+                        errorParent: null,
                     });
                     break;
                 }
@@ -100,6 +107,8 @@ class App extends Component {
         console.log('search: ', data);
         this.setState({
             code: data.code,
+            historyData: {},
+            isSendHistory: '',
         },()=>{
             this.makeRequest(
                 `${MAIN_URL}api/notes/find`,
@@ -132,16 +141,29 @@ class App extends Component {
             message: null,
             error: null,
             parentId: null,
+
+            errorParent: '',
+            code: null,
+            historyCode: null,
+            historyData: {},
+            isSendHistory: null,
         });
     };
 
     showhistoryCode = data => {
-        this.makeRequest(
-            `${MAIN_URL}api/notes/find`,
-            'post',
-            data,
-            'historyCode'
-        );
+        console.log('showhistoryCode: ', this.state.code);
+
+        this.setState({
+            isSendHistory: data.code,
+            // findData: data.findData,
+        }, () => {
+            this.makeRequest(
+                `${MAIN_URL}api/notes/find`,
+                'post',
+                data,
+                'historyCode'
+            );
+        });
     }
     hideHistoryCode = () => {
         this.setState({
@@ -180,6 +202,7 @@ class App extends Component {
                                     showhistoryCode={data => this.showhistoryCode(data)}
                                     historyData={this.state.historyData}
                                     hideHistoryCode = {this.hideHistoryCode}
+                                    errorParent = {this.state.errorParent}
                                 /> 
                             }
                         />
